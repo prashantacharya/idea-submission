@@ -74,10 +74,46 @@ const editProposal = async (req, res, next) => {
   }
 };
 
+const approveProposal = async (req, res, next) => {
+  try {
+    if (!res.locals.isAdmin) throw createError(403, 'Operation not allowed');
+    else {
+      const editedProposal = await Proposal.findByIdAndUpdate(req.params.id, {
+        verified: true,
+      });
+      if (!editedProposal) throw createError(404, 'No such proposal found');
+
+      const updatedProposal = await Proposal.findById(req.params.id);
+      res.status(202).send({ status: 'Success', payload: updatedProposal });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const rejectProposal = async (req, res, next) => {
+  try {
+    if (!res.locals.isAdmin) throw createError(403, 'Operation not allowed');
+    else {
+      const editedProposal = await Proposal.findByIdAndUpdate(req.params.id, {
+        verified: false,
+      });
+      if (!editedProposal) throw createError(404, 'No such proposal found');
+
+      const updatedProposal = await Proposal.findById(req.params.id);
+      res.status(202).send({ status: 'Success', payload: updatedProposal });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllProposals,
   getProposal,
   createProposal,
   deleteProposal,
   editProposal,
+  approveProposal,
+  rejectProposal,
 };
