@@ -1,54 +1,76 @@
 const Proposal = require('../database/models/proposal');
+const createError = require('../utils/createError');
 
-const getAllProposals = async (req, res) => {
+const getAllProposals = async (req, res, next) => {
+  console.log(res.locals);
   try {
     const proposals = await Proposal.find();
-    res.send(proposals);
+    res.send({ status: 'Success', payload: proposals });
   } catch (error) {
-    res.status(400).send(error.message);
+    next(error);
   }
 };
 
-const getProposal = async (req, res) => {
+const getProposal = async (req, res, next) => {
   try {
     const proposal = await Proposal.findById(req.params.id);
-    res.send(proposal);
+
+    if (!proposal) {
+      throw createError(404, 'Proposal not found');
+    }
+
+    res.send({ status: 'Success', payload: proposal });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    next(error);
   }
 };
 
-const createProposal = async (req, res) => {
+const createProposal = async (req, res, next) => {
   try {
-    const proposal = new Proposal(req.body);
+    const proposal = new Proposal({ ...req.body, submittedBy: res.locals.id });
     await proposal.save();
 
-    res.status(201).send(saveProposal);
+    res.status(201).send({ status: 'Success', payload: proposal });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    if (error.name === 'ValidationError') error.status = 400;
+    next(error);
   }
 };
 
-const deleteProposal = async (req, res) => {
+const deleteProposal = async (req, res, next) => {
   try {
-    const deletedProposal = await Proposal.findByIdAndDelete(req.params.id);
+    const deletedProposal = await Proposal.findOneAndDelete({
+      _id: req.params.id,
+      submittedBy: res.locals.id,
+    });
+
+    if (!deletedProposal) {
+      throw createError(404, 'Proposal not found');
+    }
 
     res.send(deletedProposal);
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    next(error);
   }
 };
 
-const editProposal = async (req, res) => {
+const editProposal = async (req, res, next) => {
   try {
-    const editedProposal = await Proposal.findByIdAndUpdate(
-      req.params.id,
+    const editProposal = await Proposal.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        submittedBy: res.locals.id,
+      },
       req.body
     );
 
-    res.status(202).send(editedProposal);
+    if (!editProposal) throw createError(404, 'Proposal not found');
+
+    const updatedProposal = await Proposal.findById(req.params.id);
+
+    res.status(202).send({ status: 'Success', payload: updatedProposal });
   } catch (error) {
-    res.status(400).send({ error: error.message });
+    next(error);
   }
 };
 
