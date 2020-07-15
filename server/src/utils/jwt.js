@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const token = require('../database/models/token');
 const createError = require('../utils/createError');
 
-const createToken = async (payload, secret, expiry = '1h', type = 'access') => {
+const createToken = async (payload, secret = process.env.ACCESSTOKEN_SECRET, expiry = '1h', type = 'access') => {
   const tok = jwt.sign(payload, secret, { expiresIn: expiry });
 
   if (type === 'refresh') {
@@ -16,7 +16,7 @@ const createToken = async (payload, secret, expiry = '1h', type = 'access') => {
   return tok;
 };
 
-const verifyToken = (token, secret) => {
+const verifyToken = (token, secret = process.env.ACCESSTOKEN_SECRET) => {
   try {
     token = token.toString();
     const decoded = jwt.verify(token, secret);
