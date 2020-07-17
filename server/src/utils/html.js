@@ -1,8 +1,8 @@
 const mail = (link) => {
-    return `
+  return `
         <p> This is link ${link}</p>
     
-    `
-}
+    `;
+};
 
-module.exports = mail
+module.exports = mail;

@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon src/app.js"
+    "start": "nodemon src/app.js",
+    "prettier": "prettier --write \"**/*.js\""
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.7",
     "nodemailer": "^6.4.10",
+    "prettier": "^2.0.5",
     "validator": "^13.0.0"
   },
   "devDependencies": {
