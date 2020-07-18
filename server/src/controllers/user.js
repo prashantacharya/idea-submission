@@ -83,10 +83,7 @@ const newPassword = async (req, res, next) => {
         .send({ status: 'Failed', error: 'No token found' });
     let user = await User.findOne({ email: decoded.id });
 
-    console.log(user);
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    user.password = hashedPassword;
+    user.password = req.body.password;
     await user.save();
     res.status(200).send({
       status: 'success',

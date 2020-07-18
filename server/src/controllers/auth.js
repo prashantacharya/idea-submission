@@ -5,13 +5,14 @@ const { createToken, verifyToken } = require('../utils/jwt');
 
 const login = async (req, res, next) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
     if (!user) {
       throw createError(401, "Email or password doesn't match");
     }
 
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (isMatch) {
       const accessToken = await createToken(
