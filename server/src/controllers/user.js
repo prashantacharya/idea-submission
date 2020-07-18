@@ -7,10 +7,23 @@ const bcrypt = require('bcrypt');
 
 const createUser = async (req, res, next) => {
   try {
-    const user = await new User(req.body);
-    await user.save();
+    const { name, email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (user)
+      return res.status(400).send({
+        status: 'failed',
+        message: 'User with provided email already exists',
+      });
 
-    res.status(201).send({ status: 'Success', payload: user });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).send({ status: 'Success', payload: newUser });
   } catch (error) {
     next(createError(400, error.message));
   }
@@ -83,7 +96,6 @@ const newPassword = async (req, res, next) => {
         .send({ status: 'Failed', error: 'No token found' });
     let user = await User.findOne({ email: decoded.id });
 
-    console.log(user);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
     user.password = hashedPassword;
